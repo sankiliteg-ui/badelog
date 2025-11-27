@@ -1,0 +1,88 @@
+/* news.css — desi + neon animated text */
+:root{
+  --bg: #050005;
+  --neonA: #ff6aa3;
+  --neonB: #ffd166;
+  --neonC: #8be9ff;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#000 0%, #070015 100%)}
+
+.page{min-height:100vh;padding:40px 12px;color:#fff;display:flex;flex-direction:column;align-items:center}
+.page-head{text-align:center;margin-bottom:18px}
+.page-head h1{margin:0;font-size:1.6rem;letter-spacing:0.6px;text-shadow:0 6px 26px rgba(139,58,235,0.12)}
+.page-head .sub{color:#d7cfe6;margin-top:8px}
+
+/* big animation container */
+.animation-box{
+  width:95%;
+  max-width:1100px;
+  height:380px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
+  padding:2rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* floating light streaks */
+.animation-box:before, .animation-box:after{
+  content:""; position:absolute; inset:auto -120px auto auto; width:260px;height:260px;border-radius:50%;
+  filter:blur(50px); opacity:.08;
+  background:radial-gradient(circle at 30% 30%, var(--neonA), transparent 35%);
+  transform: translateY(-40px) rotate(25deg);
+}
+.animation-box:after{ right:-160px; left:auto; background:radial-gradient(circle at 60% 40%, var(--neonC), transparent 35%); opacity:.07; transform: translateY(60px) rotate(-18deg) }
+
+/* text styles */
+.first-text, .second-text, .third-text, .fourth-text, .fifth-text{
+  position:absolute; opacity:0; color:#fff; text-shadow: 0 6px 24px rgba(0,0,0,0.6);
+  border-left: 6px solid rgba(255,255,255,0.02); padding-left:18px;
+}
+
+/* each line different style & animation timing */
+.first-text{ top:28px; left:28px; font-size:1.6rem; color:var(--neonA); animation:enterTop 5s forwards; letter-spacing:0.4px }
+.second-text{ top:120px; left:36px; font-size:1.2rem; color:var(--neonB); animation:enterRight 6.2s 2.4s forwards; }
+.third-text{ right:18px; top:60%; transform:rotate(-6deg); font-size:1rem; color:#ffd8e8; animation:popCenter 6s 5.8s forwards; width:44% }
+.fourth-text{ bottom:60px; left:40px; font-size:1.1rem; color:var(--neonC); animation:enterBottom 8.5s 8.8s forwards; }
+.fifth-text{ bottom:22px; left:36px; font-size:1rem; color:#ffdfb6; animation:enterGlow 9.2s 10.2s forwards; }
+
+/* keyframes */
+@keyframes enterTop {
+  0%{ transform: translateY(-30px); opacity:0 }
+  60%{ transform: translateY(8px); opacity:1 }
+  100%{ transform: translateY(0); opacity:1; filter: drop-shadow(0 8px 24px rgba(255,106,163,0.06)) }
+}
+@keyframes enterRight {
+  0%{ transform: translateX(60px); opacity:0 }
+  60%{ transform: translateX(-6px); opacity:1 }
+  100%{ transform: translateX(0); opacity:1; }
+}
+@keyframes popCenter {
+  0%{ transform: scale(.9) rotate(-8deg); opacity:0 }
+  60%{ transform: scale(1.02) rotate(-6deg); opacity:1 }
+  100%{ transform: scale(1) rotate(-6deg); opacity:1 }
+}
+@keyframes enterBottom {
+  0%{ transform: translateY(40px); opacity:0 }
+  60%{ transform: translateY(-8px); opacity:1 }
+  100%{ transform: translateY(0); opacity:1 }
+}
+@keyframes enterGlow {
+  0%{ opacity:0; transform: translateY(18px) }
+  60%{ opacity:1; transform: translateY(-4px); text-shadow:0 8px 28px rgba(255,213,102,0.08) }
+  100%{ opacity:1; transform: translateY(0) }
+}
+
+/* footer */
+.foot{ text-align:center; margin-top:18px; color:#cfc7e2; opacity:0.9; font-size:13px }
+
+/* responsive */
+@media (max-width:720px){
+  .first-text{ font-size:1.2rem; left:18px }
+  .animation-box{ height:320px; padding:1.4rem }
+  .third-text{ width:52% }
+}
