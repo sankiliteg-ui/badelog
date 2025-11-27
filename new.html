@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TUGGU KA DIL KA NOTES</title>
+    <link rel="stylesheet" href="news.css" />
+    <style>
+      /* overlay + button styling */
+      .play-overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.7));
+        z-index: 9999;
+      }
+      .play-btn {
+        background: linear-gradient(90deg,#ff7ab6,#ffd166);
+        border-radius: 14px;
+        padding: 18px 24px;
+        font-weight: 800;
+        color: #2a0040;
+        font-size: 18px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        cursor: pointer;
+        display:flex;
+        gap:12px;
+        align-items:center;
+      }
+      .play-icon {
+        width: 18px;height:18px;border-radius:3px;background:rgba(0,0,0,0.08);
+        display:inline-block; transform: translateX(2px);
+        clip-path: polygon(0 0, 100% 50%, 0 100%);
+      }
+      .hidden { display:none !important; }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-head">
+        <h1>TUGGU KA DIL KA NOTES😁</h1>
+        <p class="sub">BADE LOG😎</p>
+      </header>
+
+      <section class="animation-box">
+        <div class="first-text">Arre <strong>BABU</strong>, jab tu hoti hai — sab kuch sahi lagta hai.</div>
+        <div class="second-text">BHAI, tu meri favourite drama queen — aur main tera favourite pagal.</div>
+        <div class="third-text">Bhai, tu badal gayi... mujhse baat nahi karti — darr lagta hai, pyaar mein pagal na jaaye!</div>
+        <div class="fourth-text">ANNU — tu famous ho gayi toh main tera autograph leke rakhoonga 🥲</div>
+        <div class="fifth-text">P.S. Teri woh hasi — VIP pass hai mere dil ka.</div>
+      </section>
+
+      <footer class="foot">
+        <small>ek choti si masti — from BABU KI LIYE</small>
+      </footer>
+    </main>
+
+    <!-- main music file: place ReelAudio-98659.mp3 in same folder -->
+    <audio id="bgMusic" src="ReelAudio-98659.mp3" preload="auto" loop></audio>
+
+    <!-- play overlay (hidden initially) -->
+    <div id="playOverlay" class="play-overlay" style="display:none" aria-hidden="true">
+      <button id="playButton" class="play-btn" aria-label="Play music">
+        <span class="play-icon" aria-hidden="true"></span>
+        <span>Play song for ANNU</span>
+      </button>
+    </div>
+
+    <script>
+  // Saare lines ko .animation-box ke andar se le rahe hain
+  function getLines() {
+    const box = document.querySelector(".animation-box");
+    if (!box) return [];
+    return Array.from(box.children).map((el) =>
+      el.textContent.trim()
+    );
+  }
+
+  function speakLines() {
+    if (!("speechSynthesis" in window)) {
+      alert("Sorry, tumhare browser me text-to-speech support nahi hai.");
+      return;
+    }
+
+    const lines = getLines();
+    if (!lines.length) return;
+
+    let index = 0;
+
+    function speakNext() {
+      if (index >= lines.length) return;
+
+      const utter = new SpeechSynthesisUtterance(lines[index]);
+      // Desi touch ke liye Indian English / Hindi like voice
+      utter.lang = "en-IN";   // try "hi-IN" bhi kar sakte ho
+      utter.rate = 0.95;      // thoda slow sweet
+      utter.pitch = 1.05;
+
+      utter.onend = () => {
+        index++;
+        speakNext();
+      };
+
+      window.speechSynthesis.speak(utter);
+    }
+
+    // Agar pehle se kuch bol raha hai to cancel kar do
+    window.speechSynthesis.cancel();
+    speakNext();
+  }
+
+  // Page load hote hi automatic bolna start kare
+  window.addEventListener("load", () => {
+    // Kabhi-kabhi browser ko user click chahiye
+    // isliye pehle try karte hain
+    try {
+      speakLines();
+    } catch (e) {
+      console.log("Autoplay blocked, user click se chalao.");
+    }
+  });
+
+  // OPTIONAL: agar sure hona hai to click se bhi start kara sakte ho:
+  // document.addEventListener("click", function once() {
+  //   speakLines();
+  //   document.removeEventListener("click", once);
+  // });
+</script>
+
+  </body>
+</html>
