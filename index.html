@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>untoldcoding - envelope</title>
+    <link rel="stylesheet" href="Style3.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <div class="glow"></div>
+
+      <div class="envelope" role="button" aria-label="Open letter" tabindex="0">
+        <div class="back"></div>
+
+        <div class="letter">
+          <div class="heart" aria-hidden="true"></div>
+
+          <div class="text">
+            <p>
+              For my IGNORING <strong>QUEEN 😢😎</strong><br />
+              Thodi si desi, thodi si pagal—<br />
+              bas tere liye ye chitti
+            </p>
+
+            <!-- anchor has id for JS -->
+            <a href="new.html" id="open-link" class="open-link">Click here — Open</a>
+          </div>
+        </div>
+
+        <div class="front"></div>
+        <div class="top"></div>
+        <div class="shadow"></div>
+
+        <div class="label">
+          <h2>Hey NOOBDE — Ek surprise h DEKH LENE BADE LOG</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- optional local sound for index (short ding) -->
+    <audio id="openAudio" src="open-sound.mp3" preload="auto"></audio>
+
+    <script>
+      (function () {
+        const link = document.getElementById('open-link');
+        const audio = document.getElementById('openAudio');
+
+        // fallback beep when open-sound.mp3 not present or blocked
+        function playBeep(duration = 0.18, freq = 520) {
+          try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = 'sine';
+            o.frequency.value = freq;
+            g.gain.setValueAtTime(0, ctx.currentTime);
+            g.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.01);
+            g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.start();
+            o.stop(ctx.currentTime + duration + 0.02);
+            return new Promise(resolve => setTimeout(resolve, Math.round(duration * 1000)));
+          } catch (e) {
+            return Promise.resolve();
+          }
+        }
+
+        // When link clicked: play short sound, set a sessionStorage flag, then navigate
+        function playThenGo(e) {
+          e.preventDefault();
+          // set a short-lived flag so new.html knows to autoplay music
+          try {
+            const payload = { playMusic: true, ts: Date.now() };
+            sessionStorage.setItem('playMusicOnOpen', JSON.stringify(payload));
+          } catch (err) {
+            // ignore storage errors
+          }
+
+          // Try to play openAudio; if fails, fallback beep; after short delay, navigate
+          if (audio && audio.src) {
+            audio.currentTime = 0;
+            const p = audio.play();
+            if (p && typeof p.then === 'function') {
+              p.then(() => {
+                setTimeout(() => { window.location.href = link.href; }, 350);
+              }).catch(() => {
+                playBeep().then(() => window.location.href = link.href);
+              });
+            } else {
+              setTimeout(() => { window.location.href = link.href; }, 350);
+            }
+          } else {
+            playBeep().then(() => window.location.href = link.href);
+          }
+          return false;
+        }
+
+        link.addEventListener('click', playThenGo);
+        link.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') playThenGo(ev);
+        });
+      })();
+    </script>
+  </body>
+</html>
