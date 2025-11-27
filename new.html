@@ -19,22 +19,22 @@
       .play-btn {
         background: linear-gradient(90deg,#ff7ab6,#ffd166);
         border-radius: 14px;
-        padding: 18px 24px;
+        padding: 16px 20px;
         font-weight: 800;
         color: #2a0040;
-        font-size: 18px;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        font-size: 16px;
+        box-shadow: 0 8px 26px rgba(0,0,0,0.5);
         cursor: pointer;
         display:flex;
-        gap:12px;
+        gap:10px;
         align-items:center;
+        border: none;
       }
       .play-icon {
-        width: 18px;height:18px;border-radius:3px;background:rgba(0,0,0,0.08);
+        width: 16px;height:16px;border-radius:3px;background:rgba(0,0,0,0.08);
         display:inline-block; transform: translateX(2px);
         clip-path: polygon(0 0, 100% 50%, 0 100%);
       }
-      .hidden { display:none !important; }
     </style>
   </head>
   <body>
@@ -45,11 +45,21 @@
       </header>
 
       <section class="animation-box">
-        <div class="first-text">Arre <strong>BABU</strong>, jab tu hoti hai — sab kuch sahi lagta hai.</div>
-        <div class="second-text">BHAI, tu meri favourite drama queen — aur main tera favourite pagal.</div>
-        <div class="third-text">Bhai, tu badal gayi... mujhse baat nahi karti — darr lagta hai, pyaar mein pagal na jaaye!</div>
-        <div class="fourth-text">ANNU — tu famous ho gayi toh main tera autograph leke rakhoonga 🥲</div>
-        <div class="fifth-text">P.S. Teri woh hasi — VIP pass hai mere dil ka.</div>
+        <div class="first-text">
+          Arre <strong>BABU</strong>, jab tu hoti hai — sab kuch sahi lagta hai.
+        </div>
+        <div class="second-text">
+          BHAI, tu meri favourite drama queen — aur main tera favourite pagal.
+        </div>
+        <div class="third-text">
+          Bhai, tu badal gayi... mujhse baat nahi karti — darr lagta hai, pyaar mein pagal na jaaye!
+        </div>
+        <div class="fourth-text">
+          ANNU — tu famous ho gayi toh main tera autograph leke rakhoonga 🥲
+        </div>
+        <div class="fifth-text">
+          P.S. Teri woh hasi — VIP pass hai mere dil ka.
+        </div>
       </section>
 
       <footer class="foot">
@@ -57,77 +67,101 @@
       </footer>
     </main>
 
-    <!-- main music file: place ReelAudio-98659.mp3 in same folder -->
-    <audio id="bgMusic" src="ReelAudio-98659.mp3" preload="auto" loop></audio>
-
-    <!-- play overlay (hidden initially) -->
-    <div id="playOverlay" class="play-overlay" style="display:none" aria-hidden="true">
-      <button id="playButton" class="play-btn" aria-label="Play music">
+    <!-- Overlay for Android / mobile: user tap se voice start -->
+    <div id="playOverlay" class="play-overlay" aria-hidden="false">
+      <button id="playButton" class="play-btn" aria-label="Play message">
         <span class="play-icon" aria-hidden="true"></span>
-        <span>Play song for ANNU</span>
+        <span>Tap here to listen 🎧</span>
       </button>
     </div>
 
     <script>
-  // Saare lines ko .animation-box ke andar se le rahe hain
-  function getLines() {
-    const box = document.querySelector(".animation-box");
-    if (!box) return [];
-    return Array.from(box.children).map((el) =>
-      el.textContent.trim()
-    );
-  }
+      let preferredVoice = null;
 
-  function speakLines() {
-    if (!("speechSynthesis" in window)) {
-      alert("Sorry, tumhare browser me text-to-speech support nahi hai.");
-      return;
-    }
+      function pickVoice() {
+        if (!("speechSynthesis" in window)) return;
 
-    const lines = getLines();
-    if (!lines.length) return;
+        const voices = window.speechSynthesis.getVoices();
+        if (!voices || !voices.length) return;
 
-    let index = 0;
+        const priorityList = [
+          "Google हिन्दी",
+          "Google हिंदी",
+          "Google UK English Female",
+          "Microsoft Heera",
+          "Microsoft Neerja",
+          "Microsoft Swara"
+        ];
 
-    function speakNext() {
-      if (index >= lines.length) return;
+        preferredVoice =
+          voices.find(v => priorityList.includes(v.name)) ||
+          voices.find(v => v.lang && (v.lang.toLowerCase().startsWith("en-in") || v.lang.toLowerCase().startsWith("hi-in"))) ||
+          voices.find(v => /female|girl|woman/i.test(v.name)) ||
+          voices[0];
+      }
 
-      const utter = new SpeechSynthesisUtterance(lines[index]);
-      // Desi touch ke liye Indian English / Hindi like voice
-      utter.lang = "en-IN";   // try "hi-IN" bhi kar sakte ho
-      utter.rate = 0.95;      // thoda slow sweet
-      utter.pitch = 1.05;
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.onvoiceschanged = pickVoice;
+        pickVoice();
+      }
 
-      utter.onend = () => {
-        index++;
+      function getLines() {
+        const box = document.querySelector(".animation-box");
+        if (!box) return [];
+        return Array.from(box.children).map(el => el.textContent.trim());
+      }
+
+      function speakLines() {
+        if (!("speechSynthesis" in window)) {
+          alert("Sorry, tumhare browser me text-to-speech support nahi hai.");
+          return;
+        }
+
+        const lines = getLines();
+        if (!lines.length) return;
+
+        window.speechSynthesis.cancel();
+
+        let index = 0;
+
+        function speakNext() {
+          if (index >= lines.length) return;
+
+          const utter = new SpeechSynthesisUtterance(lines[index]);
+          utter.lang = "en-IN";   // chaho to "hi-IN"
+          utter.rate = 0.95;
+          utter.pitch = 1.05;
+
+          if (preferredVoice) {
+            utter.voice = preferredVoice;
+          }
+
+          utter.onend = () => {
+            index++;
+            speakNext();
+          };
+
+          window.speechSynthesis.speak(utter);
+        }
+
         speakNext();
-      };
+      }
 
-      window.speechSynthesis.speak(utter);
-    }
+      const overlay = document.getElementById("playOverlay");
+      const playBtn = document.getElementById("playButton");
 
-    // Agar pehle se kuch bol raha hai to cancel kar do
-    window.speechSynthesis.cancel();
-    speakNext();
-  }
+      function startExperience() {
+        speakLines();
+        overlay.style.display = "none";
+        overlay.setAttribute("aria-hidden", "true");
+      }
 
-  // Page load hote hi automatic bolna start kare
-  window.addEventListener("load", () => {
-    // Kabhi-kabhi browser ko user click chahiye
-    // isliye pehle try karte hain
-    try {
-      speakLines();
-    } catch (e) {
-      console.log("Autoplay blocked, user click se chalao.");
-    }
-  });
+      window.addEventListener("load", () => {
+        overlay.style.display = "flex";
+        overlay.setAttribute("aria-hidden", "false");
+      });
 
-  // OPTIONAL: agar sure hona hai to click se bhi start kara sakte ho:
-  // document.addEventListener("click", function once() {
-  //   speakLines();
-  //   document.removeEventListener("click", once);
-  // });
-</script>
-
+      playBtn.addEventListener("click", startExperience);
+    </script>
   </body>
 </html>
